@@ -207,4 +207,5 @@ if __name__ == "__main__":
     # print(main("You're a wizard,", 40))
     # print(main("What is the capital of France?", 5))
     # print(main("Stephen Hawking is a", 40))
-    print(main("The quick brown fox ", 10))
+    # print(main("The quick brown fox ", 10))
+    print(main("Star Wars is a movie about", 40))

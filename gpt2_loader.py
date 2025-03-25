@@ -1,5 +1,35 @@
 """
 Module for downloading and loading GPT2 weights from HuggingFace safetensors.
+
+Safetensors is a fast and safe format for storing tensors. The format uses a simple key/value structure where:
+
+- Keys are UTF-8 encoded strings representing tensor names (e.g. 'model.layers.0.attention.weight')
+- Values are binary tensor data with a fixed header containing shape and dtype information
+- A metadata section at the start of the file contains an index of all tensors and their offsets
+This structure allows for direct memory mapping and random access to individual tensors
+without loading the entire file into memory.
+
+{
+    "wpe.weight": np.array([1024, 768]),
+    "wte.weight": np.array([50257, 768]),
+    ...
+    "h.0.attn.bias": np.array([1, 1, 1024, 1024]),
+    "h.0.attn.c_attn.bias": np.array([2304]),
+    "h.0.attn.c_attn.weight": np.array([768, 2304]),
+    "h.0.attn.c_proj.bias": np.array([768]),
+    "h.0.attn.c_proj.weight": np.array([768, 768]),
+    "h.0.ln_1.bias": np.array([768]),
+    "h.0.ln_1.weight": np.array([768]),
+    "h.0.ln_2.bias": np.array([768]),
+    "h.0.ln_2.weight": np.array([768]),
+    "h.0.mlp.c_fc.bias": np.array([3072]),
+    "h.0.mlp.c_fc.weight": np.array([768, 3072]),
+    "h.0.mlp.c_proj.bias": np.array([768]),
+    "h.0.mlp.c_proj.weight": np.array([3072, 768]),
+    ...
+    "ln_f.bias": np.array([768]),
+    "ln_f.weight": np.array([768])
+}
 """
 
 from pathlib import Path

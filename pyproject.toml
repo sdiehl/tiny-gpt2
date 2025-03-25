@@ -27,3 +27,6 @@ build-backend = "poetry.core.masonry.api"
 # Disable mypy on the file encoder.py
 [tool.mypy]
 exclude = ["encoder.py"]
+
+[tool.ruff]
+exclude = ["encoder.py"]

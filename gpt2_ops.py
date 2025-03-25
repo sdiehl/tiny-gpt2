@@ -24,9 +24,7 @@ def linear(x: np.ndarray, w: np.ndarray, b: np.ndarray) -> np.ndarray:
 
 
 def ffn(x: np.ndarray, c_fc: LinearParams, c_proj: LinearParams) -> np.ndarray:
-    return linear(
-        gelu(linear(x, w=c_fc.w, b=c_fc.b)), w=c_proj.w, b=c_proj.b
-    )
+    return linear(gelu(linear(x, w=c_fc.w, b=c_fc.b)), w=c_proj.w, b=c_proj.b)
 
 
 def attention(
