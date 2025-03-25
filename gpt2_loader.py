@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 HF_API_URL = "https://huggingface.co/api/models/"
 HF_REPO_URL = "https://huggingface.co/"
 
+# Vocabulary file URL
+VOCAB_URL = "https://openaipublic.blob.core.windows.net/gpt-2/models/124M/vocab.bpe"
+ENCODE_URL = "https://openaipublic.blob.core.windows.net/gpt-2/models/124M/encoder.json"
+
 
 class GPT2WeightLoader:
     """
@@ -201,10 +205,43 @@ class GPT2WeightLoader:
         return tensor_info
 
 
+# Download the vocab and encoder files
+
+
+def download_vocab_encoder(output_dir: str) -> None:
+    """
+    Download the GPT2 vocabulary and encoder files.
+
+    Args:
+        output_dir: Directory to save the files
+    """
+    os.makedirs(output_dir, exist_ok=True)
+
+    vocab_path = os.path.join(output_dir, "vocab.bpe")
+    if not os.path.exists(vocab_path):
+        logger.info(f"Downloading vocab.bpe to {vocab_path}")
+        response = requests.get(VOCAB_URL)
+        response.raise_for_status()
+        with open(vocab_path, "wb") as f:
+            f.write(response.content)
+
+    encoder_path = os.path.join(output_dir, "encoder.json")
+    if not os.path.exists(encoder_path):
+        logger.info(f"Downloading encoder.json to {encoder_path}")
+        response = requests.get(ENCODE_URL)
+        response.raise_for_status()
+        with open(encoder_path, "wb") as f:
+            f.write(response.content)
+
+    logger.info("Downloaded vocab.bpe and encoder.json")
+
+
 def main() -> None:
     """
     Main function to demonstrate usage.
     """
+    download_vocab_encoder(".")
+
     loader = GPT2WeightLoader("openai-community/gpt2")
     loader.download_weights()
 
