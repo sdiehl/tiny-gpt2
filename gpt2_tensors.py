@@ -105,7 +105,7 @@ class GPT2TensorManager:
     def initialize(self) -> None:
         """Download necessary files and initialize the weight loader."""
         # Download vocabulary and encoder files
-        download_vocab_encoder(".")
+        download_vocab_encoder("model")
 
         # Initialize and download weights
         self.loader = GPT2WeightLoader(self.model_name)

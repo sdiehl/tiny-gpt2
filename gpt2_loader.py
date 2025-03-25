@@ -64,24 +64,19 @@ class GPT2WeightLoader:
     """
 
     def __init__(
-        self, model_name: str = "openai-community/gpt2", cache_dir: Optional[str] = None
+        self, model_name: str = "openai-community/gpt2", cache_dir: str = "model"
     ):
         """
         Initialize the GPT2WeightLoader.
 
         Args:
             model_name: The model identifier on HuggingFace (default: "openai-community/gpt2")
-            cache_dir: Directory to cache downloaded files (default: ~/.cache/cudl/models)
+            cache_dir: Directory to cache downloaded files (default: 'model')
         """
         self.model_name = model_name
 
-        # if cache_dir is None:
-        #     self.cache_dir = Path.home() / ".cache" / "cudl" / "models" / model_name.replace("/", "_")
-        # else:
-        #     self.cache_dir = Path(cache_dir) / model_name.replace("/", "_")
-
-        self.cache_dir = Path(".")
-
+        # Use 'model' folder as the cache directory
+        self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Will be populated after downloading
@@ -247,18 +242,19 @@ def download_vocab_encoder(output_dir: str) -> None:
     Args:
         output_dir: Directory to save the files
     """
-    os.makedirs(output_dir, exist_ok=True)
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-    vocab_path = os.path.join(output_dir, "vocab.bpe")
-    if not os.path.exists(vocab_path):
+    vocab_path = output_path / "vocab.bpe"
+    if not vocab_path.exists():
         logger.info(f"Downloading vocab.bpe to {vocab_path}")
         response = requests.get(VOCAB_URL)
         response.raise_for_status()
         with open(vocab_path, "wb") as f:
             f.write(response.content)
 
-    encoder_path = os.path.join(output_dir, "encoder.json")
-    if not os.path.exists(encoder_path):
+    encoder_path = output_path / "encoder.json"
+    if not encoder_path.exists():
         logger.info(f"Downloading encoder.json to {encoder_path}")
         response = requests.get(ENCODE_URL)
         response.raise_for_status()
@@ -272,7 +268,7 @@ def main() -> None:
     """
     Main function to demonstrate usage.
     """
-    download_vocab_encoder(".")
+    download_vocab_encoder("model")
 
     loader = GPT2WeightLoader("openai-community/gpt2")
     loader.download_weights()

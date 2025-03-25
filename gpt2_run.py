@@ -165,7 +165,7 @@ def run(
     params: ModelParams, hparams: HParams, prompt: str, n_tokens_to_generate: int = 40
 ) -> str:
     # Load tokenizer
-    encoder = get_encoder("", ".")
+    encoder = get_encoder("", "model")
 
     # Encode input
     input_ids = encoder.encode(prompt)
