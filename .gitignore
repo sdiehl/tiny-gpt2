@@ -1,2 +1,10 @@
 *.safetensors
 __pycache__
+.DS_Store
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+.venv
+.mypy_cache
+.ruff_cache
