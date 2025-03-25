@@ -3,47 +3,65 @@ GPT-2 weight loading and tensor transformation utilities.
 
 This module handles loading and organizing the GPT-2 weights from safetensors format
 into the structure expected by the model implementation.
+
+Abbreviation Dictionary:
+    g    - Gamma (scale parameter for layer normalization)
+    b    - Beta (bias parameter)
+    w    - Weight matrix/array
+    wte  - Word/Token Embeddings
+    wpe  - Word Position Embeddings
+    ln   - Layer Normalization
+    mlp  - Multi-Layer Perceptron
+    fc   - Fully Connected layer
+    qkv  - Query, Key, Value (attention components)
+    attn - Attention
+    proj - Projection (linear transformation)
 """
 
 import numpy as np
 import logging
 from typing import Dict, Any, Tuple, Optional, List
 from gpt2_loader import GPT2WeightLoader, download_vocab_encoder
-from typing import TypedDict
+from dataclasses import dataclass
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class LayerNormParams(TypedDict):
+@dataclass
+class LayerNormParams:
     """Layer normalization parameters."""
 
     g: np.ndarray  # Gamma (scale)
     b: np.ndarray  # Beta (bias)
 
 
-class LinearParams(TypedDict):
+@dataclass
+class LinearParams:
     """Linear layer parameters."""
 
     w: np.ndarray  # Weight matrix
     b: np.ndarray  # Bias vector
 
 
-class MLPParams(TypedDict):
+@dataclass
+class MLPParams:
     """MLP block parameters."""
 
     c_fc: LinearParams  # First linear layer
     c_proj: LinearParams  # Second linear layer
 
 
-class AttentionParams(TypedDict):
+@dataclass
+class AttentionParams:
     """Attention block parameters."""
 
     c_attn: LinearParams  # QKV projection
     c_proj: LinearParams  # Output projection
 
 
-class TransformerBlockParams(TypedDict):
+@dataclass
+class TransformerBlockParams:
     """Parameters for a single transformer block."""
 
     ln_1: LayerNormParams  # First layer norm
@@ -52,13 +70,23 @@ class TransformerBlockParams(TypedDict):
     attn: AttentionParams  # Attention block
 
 
-class ModelParams(TypedDict):
+@dataclass
+class ModelParams:
     """Complete model parameters."""
 
     wte: np.ndarray  # Token embeddings
     wpe: np.ndarray  # Position embeddings
     blocks: List[TransformerBlockParams]  # Transformer blocks
     ln_f: LayerNormParams  # Final layer norm
+
+
+@dataclass
+class HParams:
+    """Hyperparameters for the GPT-2 model."""
+
+    n_layer: int  # Number of transformer blocks
+    n_head: int  # Number of attention heads
+    n_ctx: int  # Context length
 
 
 class GPT2TensorManager:
@@ -114,26 +142,26 @@ class GPT2TensorManager:
         c_proj2_w = self.get_tensor(f"{prefix}.mlp.c_proj.weight")
         c_proj2_b = self.get_tensor(f"{prefix}.mlp.c_proj.bias")
 
-        return {
-            "ln_1": {
-                "g": self.get_tensor(f"{prefix}.ln_1.weight"),
-                "b": self.get_tensor(f"{prefix}.ln_1.bias"),
-            },
-            "ln_2": {
-                "g": self.get_tensor(f"{prefix}.ln_2.weight"),
-                "b": self.get_tensor(f"{prefix}.ln_2.bias"),
-            },
-            "mlp": {
-                "c_fc": {"w": c_fc_w, "b": c_fc_b},
-                "c_proj": {"w": c_proj2_w, "b": c_proj2_b},
-            },
-            "attn": {
-                "c_attn": {"w": c_attn_w, "b": c_attn_b},
-                "c_proj": {"w": c_proj_w, "b": c_proj_b},
-            },
-        }
+        return TransformerBlockParams(
+            ln_1=LayerNormParams(
+                g=self.get_tensor(f"{prefix}.ln_1.weight"),
+                b=self.get_tensor(f"{prefix}.ln_1.bias"),
+            ),
+            ln_2=LayerNormParams(
+                g=self.get_tensor(f"{prefix}.ln_2.weight"),
+                b=self.get_tensor(f"{prefix}.ln_2.bias"),
+            ),
+            mlp=MLPParams(
+                c_fc=LinearParams(w=c_fc_w, b=c_fc_b),
+                c_proj=LinearParams(w=c_proj2_w, b=c_proj2_b),
+            ),
+            attn=AttentionParams(
+                c_attn=LinearParams(w=c_attn_w, b=c_attn_b),
+                c_proj=LinearParams(w=c_proj_w, b=c_proj_b),
+            ),
+        )
 
-    def load_model_weights(self) -> Tuple[ModelParams, Dict[str, Any]]:
+    def load_model_weights(self) -> Tuple[ModelParams, HParams]:
         """
         Load and organize all model weights.
 
@@ -151,16 +179,22 @@ class GPT2TensorManager:
         wpe = self.get_tensor("wpe.weight")  # Position embeddings
 
         # Load final layer norm
-        ln_f: LayerNormParams = {
-            "g": self.get_tensor("ln_f.weight"),
-            "b": self.get_tensor("ln_f.bias"),
-        }
+        ln_f = LayerNormParams(
+            g=self.get_tensor("ln_f.weight"),
+            b=self.get_tensor("ln_f.bias"),
+        )
 
         # Load all transformer blocks
         blocks = []
         for i in range(self.hparams["n_layer"]):
             blocks.append(self.load_transformer_block(i))
 
-        params: ModelParams = {"wte": wte, "wpe": wpe, "blocks": blocks, "ln_f": ln_f}
+        params = ModelParams(wte=wte, wpe=wpe, blocks=blocks, ln_f=ln_f)
 
-        return params, self.hparams
+        hparams = HParams(
+            n_layer=self.hparams["n_layer"],
+            n_head=self.hparams["n_head"],
+            n_ctx=self.hparams["n_ctx"],
+        )
+
+        return params, hparams

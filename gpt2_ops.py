@@ -25,7 +25,7 @@ def linear(x: np.ndarray, w: np.ndarray, b: np.ndarray) -> np.ndarray:
 
 def ffn(x: np.ndarray, c_fc: LinearParams, c_proj: LinearParams) -> np.ndarray:
     return linear(
-        gelu(linear(x, w=c_fc["w"], b=c_fc["b"])), w=c_proj["w"], b=c_proj["b"]
+        gelu(linear(x, w=c_fc.w, b=c_fc.b)), w=c_proj.w, b=c_proj.b
     )
 
 
@@ -45,7 +45,7 @@ def mha(
     n_head: int,
 ) -> np.ndarray:
     # Project input to Q, K, V
-    x_proj = linear(x, w=c_attn["w"], b=c_attn["b"])
+    x_proj = linear(x, w=c_attn.w, b=c_attn.b)
 
     # Split into q, k, v and reshape for multiple heads
     qkv = np.split(x_proj, 3, axis=-1)
@@ -71,7 +71,7 @@ def mha(
 
     # Concatenate heads and project
     out_concat = np.concatenate([h.reshape(seq_len, -1) for h in out_heads], axis=-1)
-    return linear(out_concat, **c_proj)
+    return linear(out_concat, w=c_proj.w, b=c_proj.b)
 
 
 def transformer_block(
@@ -83,13 +83,13 @@ def transformer_block(
     n_head: int,
 ) -> np.ndarray:
     # First sub-block: Layer norm -> Attention -> Residual
-    a = layer_norm(x, g=ln_1["g"], b=ln_1["b"])
-    a = mha(a, **attn, n_head=n_head)
+    a = layer_norm(x, g=ln_1.g, b=ln_1.b)
+    a = mha(a, c_attn=attn.c_attn, c_proj=attn.c_proj, n_head=n_head)
     x = x + a
 
     # Second sub-block: Layer norm -> FFN -> Residual
-    m = layer_norm(x, g=ln_2["g"], b=ln_2["b"])
-    m = ffn(m, **mlp)
+    m = layer_norm(x, g=ln_2.g, b=ln_2.b)
+    m = ffn(m, c_fc=mlp.c_fc, c_proj=mlp.c_proj)
     x = x + m
 
     return x
