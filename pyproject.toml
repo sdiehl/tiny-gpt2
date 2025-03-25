@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "gpt2-weights"
+version = "0.1.0"
+description = ""
+authors = ["sdiehl <stephen.m.diehl@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+safetensors = "^0.5.3"
+requests = "^2.32.3"
+numpy = "^2.2.4"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+ruff = "^0.11.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
