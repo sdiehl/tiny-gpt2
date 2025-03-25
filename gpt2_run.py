@@ -7,10 +7,11 @@ functionality using the tensor operations and weight loading utilities.
 
 import numpy as np
 from encoder import get_encoder
-from gpt2_tensors import GPT2TensorManager, ModelParams
+from gpt2_tensors import GPT2TensorManager, ModelParams, HParams
 import gpt2_ops as ops
 import logging
 from typing import List
+import readline
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -139,18 +140,6 @@ def gpt2(inputs: List[int], params: ModelParams, n_head: int) -> np.ndarray:
 def generate(
     inputs: List[int], params: ModelParams, n_head: int, n_tokens_to_generate: int
 ) -> List[int]:
-    """
-    Generate tokens using the GPT-2 model.
-
-    Args:
-        inputs: Initial sequence of token IDs
-        params: Model parameters dictionary
-        n_head: Number of attention heads
-        n_tokens_to_generate: Number of new tokens to generate
-
-    Returns:
-        List of generated token IDs
-    """
     inputs = list(inputs)  # Make a copy to avoid modifying the original
 
     for i in range(n_tokens_to_generate):
@@ -172,21 +161,9 @@ def generate(
     return inputs[len(inputs) - n_tokens_to_generate :]
 
 
-def main(prompt: str, n_tokens_to_generate: int = 40) -> str:
-    """
-    Main entry point for text generation with GPT-2.
-
-    Args:
-        prompt: Input text to continue from
-        n_tokens_to_generate: Number of new tokens to generate
-
-    Returns:
-        Generated text continuation
-    """
-    # Load model weights and configuration
-    tensor_manager = GPT2TensorManager()
-    params, hparams = tensor_manager.load_model_weights()
-
+def run(
+    params: ModelParams, hparams: HParams, prompt: str, n_tokens_to_generate: int = 40
+) -> str:
     # Load tokenizer
     encoder = get_encoder("", ".")
 
@@ -211,7 +188,35 @@ def main(prompt: str, n_tokens_to_generate: int = 40) -> str:
     return output_text
 
 
+def main():
+    # Load model weights and configuration
+    print("Loading model weights...")
+    tensor_manager = GPT2TensorManager()
+    params, hparams = tensor_manager.load_model_weights()
+    print("Model loaded successfully")
+
+    # Configure readline
+    readline.parse_and_bind("tab: complete")
+    readline.set_history_length(100)
+
+    while True:
+        try:
+            # Get user input with readline support
+            prompt = input("Enter a prompt: ")
+            output = run(params, hparams, prompt)
+            print(output)
+        except KeyboardInterrupt:
+            print("\nInterrupted by user")
+            continue
+        except EOFError:
+            print("\nDone.")
+            break
+
+
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.WARNING)
+    main()
+
     # print(main("The rain in Spain falls mainly in the", 40))
     # print(main("You're a wizard,", 40))
     # print(main("What is the capital of France?", 10))
@@ -219,8 +224,6 @@ if __name__ == "__main__":
     # print(main("The quick brown fox jumped", 10))
     # print(main("Star Wars is a movie about", 40))
 
-    logging.basicConfig(level=logging.WARNING)
-
     # This is a known good prompt
-    print(main("Alan Turing theorized that computers would one day become", 10))
+    # print(main("Alan Turing theorized that computers would one day become", 10))
     # ... the most powerful machines on the planet.

@@ -27,6 +27,11 @@ def ffn(x: np.ndarray, c_fc: LinearParams, c_proj: LinearParams) -> np.ndarray:
     return linear(gelu(linear(x, w=c_fc.w, b=c_fc.b)), w=c_proj.w, b=c_proj.b)
 
 
+# XXX: Expand c_fc and c_proj into their two array arguments for easier inlining
+# def ffn(x: np.ndarray, c_fc_w: np.ndarray, c_fc_b: np.ndarray, c_proj_w: np.ndarray, c_proj_b: np.ndarray) -> np.ndarray:
+#     return linear(gelu(linear(x, w=c_fc_w, b=c_fc_b)), w=c_proj_w, b=c_proj_b)
+
+
 def attention(
     q: np.ndarray, k: np.ndarray, v: np.ndarray, mask: np.ndarray
 ) -> np.ndarray:
