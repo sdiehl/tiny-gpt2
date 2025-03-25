@@ -1,0 +1,95 @@
+import numpy as np
+from typing import Dict
+
+
+def gelu(x: np.ndarray) -> np.ndarray:
+    return 0.5 * x * (1 + np.tanh(np.sqrt(2 / np.pi) * (x + 0.044715 * x**3)))
+
+
+def softmax(x: np.ndarray) -> np.ndarray:
+    exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+
+
+def layer_norm(
+    x: np.ndarray, g: np.ndarray, b: np.ndarray, eps: float = 1e-5
+) -> np.ndarray:
+    mean = np.mean(x, axis=-1, keepdims=True)
+    variance = np.var(x, axis=-1, keepdims=True)
+    return g * (x - mean) / np.sqrt(variance + eps) + b
+
+
+def linear(x: np.ndarray, w: np.ndarray, b: np.ndarray) -> np.ndarray:
+    return x @ w + b
+
+
+def ffn(
+    x: np.ndarray, c_fc: Dict[str, np.ndarray], c_proj: Dict[str, np.ndarray]
+) -> np.ndarray:
+    return linear(gelu(linear(x, **c_fc)), **c_proj)
+
+
+def attention(
+    q: np.ndarray, k: np.ndarray, v: np.ndarray, mask: np.ndarray
+) -> np.ndarray:
+    attention_scores = (q @ k.T) / np.sqrt(q.shape[-1])
+    attention_scores = attention_scores + mask
+    attention_weights = softmax(attention_scores)
+    return attention_weights @ v
+
+
+def mha(
+    x: np.ndarray,
+    c_attn: Dict[str, np.ndarray],
+    c_proj: Dict[str, np.ndarray],
+    n_head: int,
+) -> np.ndarray:
+    # Project input to Q, K, V
+    x_proj = linear(x, **c_attn)
+
+    # Split into q, k, v and reshape for multiple heads
+    qkv = np.split(x_proj, 3, axis=-1)
+    n_embd = qkv[0].shape[-1]
+    head_dim = n_embd // n_head
+
+    # Reshape and transpose for attention
+    qkv_heads = []
+    for t in qkv:
+        reshaped = t.reshape(t.shape[0], n_head, head_dim)
+        transposed = np.transpose(reshaped, (1, 0, 2))
+        qkv_heads.append(transposed)
+
+    # Causal mask prevents attending to future tokens
+    seq_len = x.shape[0]
+    causal_mask = (1 - np.tri(seq_len, dtype=x.dtype)) * -1e10
+
+    # Apply attention for each head
+    out_heads = []
+    for h in range(n_head):
+        q, k, v = qkv_heads[0][h], qkv_heads[1][h], qkv_heads[2][h]
+        out_heads.append(attention(q, k, v, causal_mask))
+
+    # Concatenate heads and project
+    out_concat = np.concatenate([h.reshape(seq_len, -1) for h in out_heads], axis=-1)
+    return linear(out_concat, **c_proj)
+
+
+def transformer_block(
+    x: np.ndarray,
+    mlp: Dict[str, Dict[str, np.ndarray]],
+    attn: Dict[str, Dict[str, np.ndarray]],
+    ln_1: Dict[str, np.ndarray],
+    ln_2: Dict[str, np.ndarray],
+    n_head: int,
+) -> np.ndarray:
+    # First sub-block: Layer norm -> Attention -> Residual
+    a = layer_norm(x, g=ln_1["g"], b=ln_1["b"])
+    a = mha(a, **attn, n_head=n_head)
+    x = x + a
+
+    # Second sub-block: Layer norm -> FFN -> Residual
+    m = layer_norm(x, g=ln_2["g"], b=ln_2["b"])
+    m = ffn(m, **mlp)
+    x = x + m
+
+    return x
