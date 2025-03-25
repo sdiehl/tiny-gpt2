@@ -54,17 +54,16 @@ HF_REPO_URL = "https://huggingface.co/"
 VOCAB_URL = "https://openaipublic.blob.core.windows.net/gpt-2/models/124M/vocab.bpe"
 ENCODE_URL = "https://openaipublic.blob.core.windows.net/gpt-2/models/124M/encoder.json"
 
+MODEL_DIR = "model"
+
 
 class GPT2WeightLoader:
     """
     Utility class for downloading and loading GPT2 weights from HuggingFace.
-
-    This class handles downloading safetensors files from HuggingFace and
-    provides methods to access the individual layer weights.
     """
 
     def __init__(
-        self, model_name: str = "openai-community/gpt2", cache_dir: str = "model"
+        self, model_name: str = "openai-community/gpt2", cache_dir: str = MODEL_DIR
     ):
         """
         Initialize the GPT2WeightLoader.
@@ -175,15 +174,6 @@ class GPT2WeightLoader:
     def get_tensor(self, name: str):
         """
         Get a specific tensor by name.
-
-        Args:
-            name: The name of the tensor to retrieve
-
-        Returns:
-            The tensor as a numpy array
-
-        Raises:
-            ValueError: If the tensor is not found
         """
         if not self.safetensor_files:
             raise ValueError(
@@ -232,9 +222,6 @@ class GPT2WeightLoader:
         return tensor_info
 
 
-# Download the vocab and encoder files
-
-
 def download_vocab_encoder(output_dir: str) -> None:
     """
     Download the GPT2 vocabulary and encoder files.
@@ -268,7 +255,7 @@ def main() -> None:
     """
     Main function to demonstrate usage.
     """
-    download_vocab_encoder("model")
+    download_vocab_encoder(MODEL_DIR)
 
     loader = GPT2WeightLoader("openai-community/gpt2")
     loader.download_weights()
@@ -287,7 +274,6 @@ def main() -> None:
     print("\nLayer groups:")
     layer_groups: Dict[str, List[str]] = {}
     for name in tensor_names:
-        # More robust layer detection
         parts = name.split(".")
         if "h" in parts:
             # Find the index after "h"
@@ -303,6 +289,10 @@ def main() -> None:
         for tensor in sorted(tensors):
             shape, dtype = tensor_info[tensor]
             print(f"  {tensor}: {shape}, {dtype}")
+
+    print(
+        f"Downloaded {len(loader.safetensor_files)} safetensor files to {MODEL_DIR}/model.safetensors"
+    )
 
 
 if __name__ == "__main__":

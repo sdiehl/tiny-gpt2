@@ -23,13 +23,14 @@ def linear(x: np.ndarray, w: np.ndarray, b: np.ndarray) -> np.ndarray:
     return x @ w + b
 
 
-def ffn(x: np.ndarray, c_fc: LinearParams, c_proj: LinearParams) -> np.ndarray:
-    return linear(gelu(linear(x, w=c_fc.w, b=c_fc.b)), w=c_proj.w, b=c_proj.b)
-
-
-# XXX: Expand c_fc and c_proj into their two array arguments for easier inlining
-# def ffn(x: np.ndarray, c_fc_w: np.ndarray, c_fc_b: np.ndarray, c_proj_w: np.ndarray, c_proj_b: np.ndarray) -> np.ndarray:
-#     return linear(gelu(linear(x, w=c_fc_w, b=c_fc_b)), w=c_proj_w, b=c_proj_b)
+def ffn(
+    x: np.ndarray,
+    c_fc_w: np.ndarray,
+    c_fc_b: np.ndarray,
+    c_proj_w: np.ndarray,
+    c_proj_b: np.ndarray,
+) -> np.ndarray:
+    return linear(gelu(linear(x, w=c_fc_w, b=c_fc_b)), w=c_proj_w, b=c_proj_b)
 
 
 def attention(
@@ -92,7 +93,13 @@ def transformer_block(
 
     # Second sub-block: Layer norm -> FFN -> Residual
     m = layer_norm(x, g=ln_2.g, b=ln_2.b)
-    m = ffn(m, c_fc=mlp.c_fc, c_proj=mlp.c_proj)
+    m = ffn(
+        m,
+        c_fc_w=mlp.c_fc.w,
+        c_fc_b=mlp.c_fc.b,
+        c_proj_w=mlp.c_proj.w,
+        c_proj_b=mlp.c_proj.b,
+    )
     x = x + m
 
     return x
