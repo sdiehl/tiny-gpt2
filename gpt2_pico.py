@@ -7,44 +7,130 @@ functionality using the tensor operations and weight loading utilities.
 
 import numpy as np
 from encoder import get_encoder
-from gpt2_tensors import GPT2TensorManager
+from gpt2_tensors import GPT2TensorManager, ModelParams
 import gpt2_ops as ops
 import logging
+from typing import List
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def gpt2(inputs, wte, wpe, blocks, ln_f, n_head):
+def gpt2(inputs: List[int], params: ModelParams, n_head: int) -> np.ndarray:
     """
     Forward pass through the GPT-2 model.
 
     Args:
         inputs: List of token IDs
-        wte: Token embedding matrix
-        wpe: Position embedding matrix
-        blocks: List of transformer block parameters
-        ln_f: Final layer normalization parameters
+        params: Model parameters dictionary
         n_head: Number of attention heads
 
     Returns:
         Logits for next token prediction
     """
     # Get token embeddings and position embeddings
-    x = wte[inputs] + wpe[range(len(inputs))]
+    x = params["wte"][inputs] + params["wpe"][range(len(inputs))]
 
     # Apply transformer blocks
-    for block in blocks:
-        x = ops.transformer_block(x, **block, n_head=n_head)
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][0]["mlp"],
+        attn=params["blocks"][0]["attn"],
+        ln_1=params["blocks"][0]["ln_1"],
+        ln_2=params["blocks"][0]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][1]["mlp"],
+        attn=params["blocks"][1]["attn"],
+        ln_1=params["blocks"][1]["ln_1"],
+        ln_2=params["blocks"][1]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][2]["mlp"],
+        attn=params["blocks"][2]["attn"],
+        ln_1=params["blocks"][2]["ln_1"],
+        ln_2=params["blocks"][2]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][3]["mlp"],
+        attn=params["blocks"][3]["attn"],
+        ln_1=params["blocks"][3]["ln_1"],
+        ln_2=params["blocks"][3]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][4]["mlp"],
+        attn=params["blocks"][4]["attn"],
+        ln_1=params["blocks"][4]["ln_1"],
+        ln_2=params["blocks"][4]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][5]["mlp"],
+        attn=params["blocks"][5]["attn"],
+        ln_1=params["blocks"][5]["ln_1"],
+        ln_2=params["blocks"][5]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][6]["mlp"],
+        attn=params["blocks"][6]["attn"],
+        ln_1=params["blocks"][6]["ln_1"],
+        ln_2=params["blocks"][6]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][7]["mlp"],
+        attn=params["blocks"][7]["attn"],
+        ln_1=params["blocks"][7]["ln_1"],
+        ln_2=params["blocks"][7]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][8]["mlp"],
+        attn=params["blocks"][8]["attn"],
+        ln_1=params["blocks"][8]["ln_1"],
+        ln_2=params["blocks"][8]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][9]["mlp"],
+        attn=params["blocks"][9]["attn"],
+        ln_1=params["blocks"][9]["ln_1"],
+        ln_2=params["blocks"][9]["ln_2"],
+    )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params["blocks"][10]["mlp"],
+        attn=params["blocks"][10]["attn"],
+        ln_1=params["blocks"][10]["ln_1"],
+        ln_2=params["blocks"][10]["ln_2"],
+    )
 
     # Apply final layer norm and project to vocabulary
-    x = ops.layer_norm(x, **ln_f)
-    logits = x @ wte.T  # Project to vocabulary
+    x = ops.layer_norm(x, **params["ln_f"])
+    logits = x @ params["wte"].T  # Project to vocabulary
 
     return logits
 
 
-def generate(inputs, params, n_head, n_tokens_to_generate):
+def generate(
+    inputs: List[int], params: ModelParams, n_head: int, n_tokens_to_generate: int
+) -> List[int]:
     """
     Generate tokens using the GPT-2 model.
 
@@ -64,7 +150,7 @@ def generate(inputs, params, n_head, n_tokens_to_generate):
         print(f"Generating token {i+1}/{n_tokens_to_generate}", end="\r")
 
         # Get logits for the entire sequence
-        logits = gpt2(inputs, **params, n_head=n_head)
+        logits = gpt2(inputs, params, n_head=n_head)
 
         # Get the next token ID from the last position
         next_id = np.argmax(logits[-1])
@@ -78,7 +164,7 @@ def generate(inputs, params, n_head, n_tokens_to_generate):
     return inputs[len(inputs) - n_tokens_to_generate :]
 
 
-def main(prompt: str, n_tokens_to_generate: int = 40):
+def main(prompt: str, n_tokens_to_generate: int = 40) -> str:
     """
     Main entry point for text generation with GPT-2.
 

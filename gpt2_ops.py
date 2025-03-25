@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Dict
+from gpt2_tensors import LayerNormParams, LinearParams, MLPParams, AttentionParams
 
 
 def gelu(x: np.ndarray) -> np.ndarray:
@@ -23,10 +23,10 @@ def linear(x: np.ndarray, w: np.ndarray, b: np.ndarray) -> np.ndarray:
     return x @ w + b
 
 
-def ffn(
-    x: np.ndarray, c_fc: Dict[str, np.ndarray], c_proj: Dict[str, np.ndarray]
-) -> np.ndarray:
-    return linear(gelu(linear(x, **c_fc)), **c_proj)
+def ffn(x: np.ndarray, c_fc: LinearParams, c_proj: LinearParams) -> np.ndarray:
+    return linear(
+        gelu(linear(x, w=c_fc["w"], b=c_fc["b"])), w=c_proj["w"], b=c_proj["b"]
+    )
 
 
 def attention(
@@ -40,12 +40,12 @@ def attention(
 
 def mha(
     x: np.ndarray,
-    c_attn: Dict[str, np.ndarray],
-    c_proj: Dict[str, np.ndarray],
+    c_attn: LinearParams,
+    c_proj: LinearParams,
     n_head: int,
 ) -> np.ndarray:
     # Project input to Q, K, V
-    x_proj = linear(x, **c_attn)
+    x_proj = linear(x, w=c_attn["w"], b=c_attn["b"])
 
     # Split into q, k, v and reshape for multiple heads
     qkv = np.split(x_proj, 3, axis=-1)
@@ -76,10 +76,10 @@ def mha(
 
 def transformer_block(
     x: np.ndarray,
-    mlp: Dict[str, Dict[str, np.ndarray]],
-    attn: Dict[str, Dict[str, np.ndarray]],
-    ln_1: Dict[str, np.ndarray],
-    ln_2: Dict[str, np.ndarray],
+    mlp: MLPParams,
+    attn: AttentionParams,
+    ln_1: LayerNormParams,
+    ln_2: LayerNormParams,
     n_head: int,
 ) -> np.ndarray:
     # First sub-block: Layer norm -> Attention -> Residual

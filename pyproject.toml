@@ -16,7 +16,14 @@ regex = "^2024.11.6"
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 ruff = "^0.11.2"
+mypy = "^1.15.0"
+types-requests = "^2.32.0.20250306"
+types-regex = "^2024.11.6.20250318"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+# Disable mypy on the file encoder.py
+[tool.mypy]
+exclude = ["encoder.py"]

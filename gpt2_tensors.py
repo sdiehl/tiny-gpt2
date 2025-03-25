@@ -7,11 +7,58 @@ into the structure expected by the model implementation.
 
 import numpy as np
 import logging
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple, Optional, List
 from gpt2_loader import GPT2WeightLoader, download_vocab_encoder
+from typing import TypedDict
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+class LayerNormParams(TypedDict):
+    """Layer normalization parameters."""
+
+    g: np.ndarray  # Gamma (scale)
+    b: np.ndarray  # Beta (bias)
+
+
+class LinearParams(TypedDict):
+    """Linear layer parameters."""
+
+    w: np.ndarray  # Weight matrix
+    b: np.ndarray  # Bias vector
+
+
+class MLPParams(TypedDict):
+    """MLP block parameters."""
+
+    c_fc: LinearParams  # First linear layer
+    c_proj: LinearParams  # Second linear layer
+
+
+class AttentionParams(TypedDict):
+    """Attention block parameters."""
+
+    c_attn: LinearParams  # QKV projection
+    c_proj: LinearParams  # Output projection
+
+
+class TransformerBlockParams(TypedDict):
+    """Parameters for a single transformer block."""
+
+    ln_1: LayerNormParams  # First layer norm
+    ln_2: LayerNormParams  # Second layer norm
+    mlp: MLPParams  # MLP block
+    attn: AttentionParams  # Attention block
+
+
+class ModelParams(TypedDict):
+    """Complete model parameters."""
+
+    wte: np.ndarray  # Token embeddings
+    wpe: np.ndarray  # Position embeddings
+    blocks: List[TransformerBlockParams]  # Transformer blocks
+    ln_f: LayerNormParams  # Final layer norm
 
 
 class GPT2TensorManager:
@@ -42,15 +89,6 @@ class GPT2TensorManager:
         logger.info(f"Model configuration loaded: {self.hparams}")
 
     def get_tensor(self, name: str) -> np.ndarray:
-        """
-        Load a tensor by name with logging.
-
-        Args:
-            name: Name of the tensor to load
-
-        Returns:
-            The loaded numpy array
-        """
         if self.loader is None:
             raise RuntimeError(
                 "TensorManager not initialized. Call initialize() first."
@@ -60,16 +98,7 @@ class GPT2TensorManager:
         logger.info(f"Loaded tensor {name} with shape {tensor.shape}")
         return tensor
 
-    def load_transformer_block(self, block_idx: int) -> Dict[str, Any]:
-        """
-        Load weights for a single transformer block.
-
-        Args:
-            block_idx: Index of the transformer block to load
-
-        Returns:
-            Dictionary containing organized weights for the block
-        """
+    def load_transformer_block(self, block_idx: int) -> TransformerBlockParams:
         prefix = f"h.{block_idx}"
         logger.info(f"\nLoading transformer block {block_idx}")
 
@@ -104,7 +133,7 @@ class GPT2TensorManager:
             },
         }
 
-    def load_model_weights(self) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    def load_model_weights(self) -> Tuple[ModelParams, Dict[str, Any]]:
         """
         Load and organize all model weights.
 
@@ -122,13 +151,16 @@ class GPT2TensorManager:
         wpe = self.get_tensor("wpe.weight")  # Position embeddings
 
         # Load final layer norm
-        ln_f = {"g": self.get_tensor("ln_f.weight"), "b": self.get_tensor("ln_f.bias")}
+        ln_f: LayerNormParams = {
+            "g": self.get_tensor("ln_f.weight"),
+            "b": self.get_tensor("ln_f.bias"),
+        }
 
         # Load all transformer blocks
         blocks = []
         for i in range(self.hparams["n_layer"]):
             blocks.append(self.load_transformer_block(i))
 
-        params = {"wte": wte, "wpe": wpe, "blocks": blocks, "ln_f": ln_f}
+        params: ModelParams = {"wte": wte, "wpe": wpe, "blocks": blocks, "ln_f": ln_f}
 
         return params, self.hparams
