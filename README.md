@@ -13,7 +13,11 @@ Also need to download the encoder and vocab files `vocab.bpe` and `encoder.json`
 
 ```bash
 poetry install
+
+# Download the model weights
 poetry run python gpt2_loader.py
+
+# Run the inference
 poetry run python gpt2_run.py
 ```
 
@@ -30,6 +34,10 @@ In addition, the following files are included:
 
 * `encoder.py` - The BPE encoder from the original GPT-2 repository
 * `tokenize.py` - Example of how to use the encoder
+
+In the model directory, you will find the following files:
+
+* `model.safetensors` - The model weights
 * `vocab.bpe` - The BPE vocab from the original GPT-2 repository
 * `encoder.json` - The encoder json from the original GPT-2 repository
 * `config.json` - The GPT-2 model configuration
