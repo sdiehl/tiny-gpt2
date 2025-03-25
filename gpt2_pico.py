@@ -120,6 +120,14 @@ def gpt2(inputs: List[int], params: ModelParams, n_head: int) -> np.ndarray:
         ln_1=params.blocks[10].ln_1,
         ln_2=params.blocks[10].ln_2,
     )
+    x = ops.transformer_block(
+        x,
+        n_head=n_head,
+        mlp=params.blocks[11].mlp,
+        attn=params.blocks[11].attn,
+        ln_1=params.blocks[11].ln_1,
+        ln_2=params.blocks[11].ln_2,
+    )
 
     # Apply final layer norm and project to vocabulary
     x = ops.layer_norm(x, g=params.ln_f.g, b=params.ln_f.b)
@@ -205,7 +213,7 @@ def main(prompt: str, n_tokens_to_generate: int = 40) -> str:
 if __name__ == "__main__":
     # print(main("The rain in Spain falls mainly in the", 40))
     # print(main("You're a wizard,", 40))
-    # print(main("What is the capital of France?", 5))
-    # print(main("Stephen Hawking is a", 40))
-    # print(main("The quick brown fox ", 10))
-    print(main("Star Wars is a movie about", 40))
+    # print(main("What is the capital of France?", 10))
+    print(main("Stephen Hawking is a", 40))
+    # print(main("The quick brown fox jumped", 10))
+    # print(main("Star Wars is a movie about", 40))
