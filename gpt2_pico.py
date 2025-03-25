@@ -214,6 +214,10 @@ if __name__ == "__main__":
     # print(main("The rain in Spain falls mainly in the", 40))
     # print(main("You're a wizard,", 40))
     # print(main("What is the capital of France?", 10))
-    print(main("Stephen Hawking is a", 40))
+    # print(main("Stephen Hawking is a", 40))
     # print(main("The quick brown fox jumped", 10))
     # print(main("Star Wars is a movie about", 40))
+
+    # This is a known good prompt
+    print(main("Alan Turing theorized that computers would one day become", 10))
+    # ... the most powerful machines on the planet.

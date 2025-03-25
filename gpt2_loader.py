@@ -30,6 +30,8 @@ without loading the entire file into memory.
     "ln_f.bias": np.array([768]),
     "ln_f.weight": np.array([768])
 }
+
+# XXX: This module is not very efficient yet, it should load all the weights into memory at once.
 """
 
 from pathlib import Path
