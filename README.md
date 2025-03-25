@@ -7,11 +7,10 @@ Script to download GPT2 weights from HuggingFace and dump out the individual wei
 
 Also downloads the encoder and vocab files.
 
-```python
-from encoder import get_encoder
+## Running
 
-encoder = get_encoder("", ".")
-encoded = encoder.encode("Hello, world!")
-
-print(encoded) # [15496, 11, 995, 0]
+```bash
+poetry install
+poetry run python gpt2_loader.py
+poetry run python gpt2_run.py
 ```

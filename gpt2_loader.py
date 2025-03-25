@@ -43,7 +43,7 @@ import requests
 from safetensors import safe_open
 import numpy as np
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 # URL constants
@@ -96,7 +96,7 @@ class GPT2WeightLoader:
             force: If True, re-download files even if they already exist in cache
         """
         # First get model info from HF API
-        logger.info(f"Getting model info for {self.model_name}")
+        # logger.info(f"Getting model info for {self.model_name}")
         response = requests.get(f"{HF_API_URL}{self.model_name}")
         response.raise_for_status()
         model_info = response.json()

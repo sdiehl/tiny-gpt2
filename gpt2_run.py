@@ -202,7 +202,8 @@ def main(prompt: str, n_tokens_to_generate: int = 40) -> str:
         logger.warning(f"Reducing tokens to generate to {n_tokens_to_generate}")
 
     # Generate tokens
-    logger.info(f"Generating {n_tokens_to_generate} tokens for prompt: {prompt}")
+    # print(f"Generating {n_tokens_to_generate} tokens for prompt:\n {prompt}")
+    print(prompt)
     output_ids = generate(input_ids, params, hparams.n_head, n_tokens_to_generate)
 
     # Decode the output
@@ -217,6 +218,8 @@ if __name__ == "__main__":
     # print(main("Stephen Hawking is a", 40))
     # print(main("The quick brown fox jumped", 10))
     # print(main("Star Wars is a movie about", 40))
+
+    logging.basicConfig(level=logging.WARNING)
 
     # This is a known good prompt
     print(main("Alan Turing theorized that computers would one day become", 10))

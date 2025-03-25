@@ -24,7 +24,6 @@ from typing import Dict, Any, Tuple, Optional, List
 from gpt2_loader import GPT2WeightLoader, download_vocab_encoder
 from dataclasses import dataclass
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -123,12 +122,12 @@ class GPT2TensorManager:
             )
 
         tensor = self.loader.get_tensor(name)
-        logger.info(f"Loaded tensor {name} with shape {tensor.shape}")
+        logger.debug(f"Loaded tensor {name} with shape {tensor.shape}")
         return tensor
 
     def load_transformer_block(self, block_idx: int) -> TransformerBlockParams:
         prefix = f"h.{block_idx}"
-        logger.info(f"\nLoading transformer block {block_idx}")
+        logger.debug(f"\nLoading transformer block {block_idx}")
 
         # Load attention weights
         c_attn_w = self.get_tensor(f"{prefix}.attn.c_attn.weight")
