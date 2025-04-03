@@ -71,8 +71,7 @@ def ffn(
 def attention(
     q: np.ndarray, k: np.ndarray, v: np.ndarray, mask: np.ndarray
 ) -> np.ndarray:
-    attention_scores = (q @ k.T) / np.sqrt(q.shape[-1])
-    attention_scores = attention_scores + mask
+    attention_scores = (q @ k.T) / np.sqrt(q.shape[-1]) + mask
     attention_weights = softmax(attention_scores)
     return attention_weights @ v
 
@@ -93,7 +92,7 @@ def mha(
 
     # split into heads
     # [3, N, 768] -> [3, n_head, N, 768/n_head]
-    qkv_heads = list(map(lambda x: np.split(x, n_head, axis=-1), qkv))
+    qkv_heads = [np.split(x, n_head, axis=-1) for x in qkv]
 
     # causal mask to hide future inputs from being attended to
     # [N, N]
