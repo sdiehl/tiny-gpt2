@@ -1,6 +1,13 @@
 import numpy as np
 from gpt2_tensors import LayerNormParams, LinearParams, MLPParams, AttentionParams
 
+# N - sequence length
+# 768 - embedding size
+# 64 - number of heads
+# 3072 - feed forward size
+# 12 - number of transformer blocks
+
+
 # gelu:
 #   x : (N, 768)
 #   out : (N, 768)
@@ -54,6 +61,7 @@ def ffn(
 ) -> np.ndarray:
     return linear(gelu(linear(x, w=c_fc_w, b=c_fc_b)), w=c_proj_w, b=c_proj_b)
 
+
 # attention:
 #   q : (N, 64)
 #   k : (N, 64)
@@ -73,39 +81,36 @@ def attention(
 #   x : (N, 768)
 #   out : (N, 768)
 def mha(
-    x: np.ndarray,
-    c_attn: LinearParams,
-    c_proj: LinearParams,
-    n_head: int,
+    x: np.ndarray, c_attn: LinearParams, c_proj: LinearParams, n_head: int
 ) -> np.ndarray:
-    # Project input to Q, K, V
-    x_proj = linear(x, w=c_attn.w, b=c_attn.b)
+    # qkv projection
+    # [N, 768] -> [N, 3*768]
+    x = linear(x, w=c_attn.w, b=c_attn.b)
 
-    # Split into q, k, v and reshape for multiple heads
-    qkv = np.split(x_proj, 3, axis=-1)
-    n_embd = qkv[0].shape[-1]
-    head_dim = n_embd // n_head
+    # split into qkv
+    # [N, 3*768] -> [3, N, 768]
+    qkv = np.split(x, 3, axis=-1)
 
-    # Reshape and transpose for attention
-    qkv_heads = []
-    for t in qkv:
-        reshaped = t.reshape(t.shape[0], n_head, head_dim)
-        transposed = np.transpose(reshaped, (1, 0, 2))
-        qkv_heads.append(transposed)
+    # split into heads
+    # [3, N, 768] -> [3, n_head, N, 768/n_head]
+    qkv_heads = list(map(lambda x: np.split(x, n_head, axis=-1), qkv))
 
-    # Causal mask prevents attending to future tokens
-    seq_len = x.shape[0]
-    causal_mask = (1 - np.tri(seq_len, dtype=x.dtype)) * -1e10
+    # causal mask to hide future inputs from being attended to
+    # [N, N]
+    causal_mask = (1 - np.tri(x.shape[0], dtype=x.dtype)) * -1e10
 
-    # Apply attention for each head
-    out_heads = []
-    for h in range(n_head):
-        q, k, v = qkv_heads[0][h], qkv_heads[1][h], qkv_heads[2][h]
-        out_heads.append(attention(q, k, v, causal_mask))
+    # perform attention over each head
+    # [3, n_head, N, 768/n_head] -> [n_head, N, 768/n_head]
+    out_heads = [attention(q, k, v, causal_mask) for q, k, v in zip(*qkv_heads)]
 
-    # Concatenate heads and project
-    out_concat = np.concatenate([h.reshape(seq_len, -1) for h in out_heads], axis=-1)
-    return linear(out_concat, w=c_proj.w, b=c_proj.b)
+    # merge heads
+    # [n_head, N, 768/n_head] -> [N, 768]
+    x = np.hstack(out_heads)
+
+    # out projection
+    # [N, 768] -> [N, 768]
+    return linear(x, w=c_proj.w, b=c_proj.b)
+
 
 # transformer_block:
 #   x : (N, 768)

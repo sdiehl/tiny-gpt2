@@ -203,7 +203,7 @@ def main():
         try:
             # Get user input with readline support
             prompt = input("Enter a prompt: ")
-            output = run(params, hparams, prompt)
+            output = run(params, hparams, prompt.strip())
             print(output)
         except KeyboardInterrupt:
             print("\nInterrupted by user")
