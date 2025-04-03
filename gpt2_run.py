@@ -10,14 +10,13 @@ from encoder import get_encoder
 from gpt2_tensors import GPT2TensorManager, ModelParams, HParams
 import gpt2_ops as ops
 import logging
-from typing import List
 import readline
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def gpt2(inputs: List[int], params: ModelParams, n_head: int) -> np.ndarray:
+def gpt2(inputs: list[int], params: ModelParams, n_head: int) -> np.ndarray:
     """
     Forward pass through the GPT-2 model.
 
@@ -138,8 +137,8 @@ def gpt2(inputs: List[int], params: ModelParams, n_head: int) -> np.ndarray:
 
 
 def generate(
-    inputs: List[int], params: ModelParams, n_head: int, n_tokens_to_generate: int
-) -> List[int]:
+    inputs: list[int], params: ModelParams, n_head: int, n_tokens_to_generate: int
+) -> list[int]:
     inputs = list(inputs)  # Make a copy to avoid modifying the original
 
     for i in range(n_tokens_to_generate):
