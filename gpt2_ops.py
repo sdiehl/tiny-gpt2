@@ -1,16 +1,26 @@
 import numpy as np
 from gpt2_tensors import LayerNormParams, LinearParams, MLPParams, AttentionParams
 
-
+# gelu:
+#   x : (N, 768)
+#   out : (N, 768)
 def gelu(x: np.ndarray) -> np.ndarray:
     return 0.5 * x * (1 + np.tanh(np.sqrt(2 / np.pi) * (x + 0.044715 * x**3)))
 
 
+# softmax:
+#   x : (N, 64)
+#   out : (N, 64)
 def softmax(x: np.ndarray) -> np.ndarray:
     exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
     return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
 
 
+# layer_norm:
+#   x : (N, 768)
+#   g : (768,)
+#   b : (768,)
+#   out : (N, 768)
 def layer_norm(
     x: np.ndarray, g: np.ndarray, b: np.ndarray, eps: float = 1e-5
 ) -> np.ndarray:
@@ -19,10 +29,22 @@ def layer_norm(
     return g * (x - mean) / np.sqrt(variance + eps) + b
 
 
+# linear:
+#   x : (N, 768)
+#   w : (768, 3072)
+#   b : (3072,)
+#   out : (N, 3072)
 def linear(x: np.ndarray, w: np.ndarray, b: np.ndarray) -> np.ndarray:
     return x @ w + b
 
 
+# ffn:
+#   x : (N, 768)
+#   c_fc_w : (768, 3072)
+#   c_fc_b : (3072,)
+#   c_proj_w : (3072, 768)
+#   c_proj_b : (768,)
+#   out : (N, 768)
 def ffn(
     x: np.ndarray,
     c_fc_w: np.ndarray,
@@ -32,7 +54,12 @@ def ffn(
 ) -> np.ndarray:
     return linear(gelu(linear(x, w=c_fc_w, b=c_fc_b)), w=c_proj_w, b=c_proj_b)
 
-
+# attention:
+#   q : (N, 64)
+#   k : (N, 64)
+#   v : (N, 64)
+#   mask : (N, N)
+#   out : (N, 64)
 def attention(
     q: np.ndarray, k: np.ndarray, v: np.ndarray, mask: np.ndarray
 ) -> np.ndarray:
@@ -42,6 +69,9 @@ def attention(
     return attention_weights @ v
 
 
+# mha:
+#   x : (N, 768)
+#   out : (N, 768)
 def mha(
     x: np.ndarray,
     c_attn: LinearParams,
@@ -77,7 +107,9 @@ def mha(
     out_concat = np.concatenate([h.reshape(seq_len, -1) for h in out_heads], axis=-1)
     return linear(out_concat, w=c_proj.w, b=c_proj.b)
 
-
+# transformer_block:
+#   x : (N, 768)
+#   out : (N, 768)
 def transformer_block(
     x: np.ndarray,
     mlp: MLPParams,
