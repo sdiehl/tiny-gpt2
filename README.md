@@ -16,11 +16,8 @@ Also need to download the encoder and vocab files `vocab.bpe` and `encoder.json`
 # Install dependencies
 poetry install
 
-# Download the model weights
-poetry run python gpt2_loader.py
-
-# Run the inference
-poetry run python gpt2_run.py
+# Run inference
+poetry run python example.py
 ```
 
 ## Structure
