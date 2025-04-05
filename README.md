@@ -49,3 +49,7 @@ In the model directory, you will find the following files:
 The attention patterns of the model can be visualized using the `gpt2_viz.py` script. This will generate a heatmap of the attention patterns for a given input sequence.
 
 ![](./attention.png)
+
+## License
+
+MIT License
