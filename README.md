@@ -27,16 +27,16 @@ poetry run python gpt2_run.py
 
 The core logic is split into several files:
 
-* [`gpt2_tensors.py`](gpt2_tensors.py) - Loads the tensors into layer forms that can be used for inference
-* [`gpt2_ops.py`](gpt2_ops.py) - Implements the GPT-2 primitives (gelu, layernorm, softmax, etc.)
-* [`gpt2_run.py`](gpt2_run.py) - Loads the weights and runs inference
+* [`gpt2_tensors.py`](tinygpt2/gpt2_tensors.py) - Loads the tensors into layer forms that can be used for inference
+* [`gpt2_ops.py`](tinygpt2/gpt2_ops.py) - Implements the GPT-2 primitives (gelu, layernorm, softmax, etc.)
+* [`gpt2_run.py`](tinygpt2/gpt2_run.py) - Loads the weights and runs inference
 
 In addition, the following files are included:
 
-* [`encoder.py`](encoder.py) - The BPE encoder from the original GPT-2 repository
+* [`encoder.py`](tinygpt2/encoder.py) - The BPE encoder from the original GPT-2 repository
 * [`tokenize.py`](tokenize.py) - Example of how to use the encoder
-* [`gpt2_minimal.py`](gpt2_minimal.py) - The GPT-2 model in a single function
-* [`gpt2_viz.py`](gpt2_viz.py) - Visualize the attention patterns of the model
+* [`gpt2_minimal.py`](tinygpt2/gpt2_minimal.py) - The GPT-2 model in a single function
+* [`gpt2_viz.py`](tinygpt2/gpt2_viz.py) - Visualize the attention patterns of the model
 
 In the model directory, you will find the following files:
 
