@@ -25,18 +25,19 @@ poetry run python gpt2_run.py
 
 The core logic is split into several files:
 
-* `gpt2_tensors.py` - Loads the tensors into layer forms that can be used for inference
-* `gpt2_ops.py` - Implements the GPT-2 primitives (gelu, layernorm, softmax, etc.)
-* `gpt2_run.py` - Loads the weights and runs inference
+* [`gpt2_tensors.py`](gpt2_tensors.py) - Loads the tensors into layer forms that can be used for inference
+* [`gpt2_ops.py`](gpt2_ops.py) - Implements the GPT-2 primitives (gelu, layernorm, softmax, etc.)
+* [`gpt2_run.py`](gpt2_run.py) - Loads the weights and runs inference
 
 In addition, the following files are included:
 
-* `encoder.py` - The BPE encoder from the original GPT-2 repository
-* `tokenize.py` - Example of how to use the encoder
+* [`encoder.py`](encoder.py) - The BPE encoder from the original GPT-2 repository
+* [`tokenize.py`](tokenize.py) - Example of how to use the encoder
+* [`gpt2_minimal.py`](gpt2_minimal.py) - The GPT-2 model in a single function
 
 In the model directory, you will find the following files:
 
+* [`config.json`](model/config.json) - The GPT-2 model configuration
 * `model.safetensors` - The model weights
 * `vocab.bpe` - The BPE vocab from the original GPT-2 repository
 * `encoder.json` - The encoder json from the original GPT-2 repository
-* `config.json` - The GPT-2 model configuration
