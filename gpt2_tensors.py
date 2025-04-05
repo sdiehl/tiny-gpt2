@@ -151,10 +151,12 @@ def load_gpt2_weights(
     # Download safetensors file - simplified since we know there's only one
     weights_path = cache_path / "model.safetensors"
     if not weights_path.exists():
+        print("Downloading weights from HuggingFace...")
         weights_url = f"{HF_REPO_URL}{model_name}/resolve/main/model.safetensors"
         response = requests.get(weights_url)
         response.raise_for_status()
         weights_path.write_bytes(response.content)
+        print(f"Weights downloaded to {weights_path}")
 
     # Load tensors
     tensors = {}

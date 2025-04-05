@@ -9,11 +9,7 @@ import numpy as np
 from encoder import get_encoder
 from gpt2_tensors import load_gpt2_weights, ModelParams, HParams
 import gpt2_ops as ops
-import logging
 import readline
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 def gpt2(inputs: list[int], params: ModelParams, n_head: int) -> np.ndarray:
@@ -136,7 +132,7 @@ def gpt2(inputs: list[int], params: ModelParams, n_head: int) -> np.ndarray:
     return logits
 
 
-def generate(
+def generate_tokens(
     inputs: list[int],
     params: ModelParams,
     n_head: int,
@@ -166,7 +162,7 @@ def generate(
     return generated_tokens
 
 
-def run(
+def generate(
     params: ModelParams, hparams: HParams, prompt: str, n_tokens_to_generate: int = 40
 ) -> str:
     # Load tokenizer
@@ -177,17 +173,17 @@ def run(
 
     # Ensure we don't exceed context length
     if len(input_ids) + n_tokens_to_generate >= hparams.n_ctx:
-        logger.warning(
+        print(
             f"Input length + tokens to generate ({len(input_ids) + n_tokens_to_generate}) exceeds model context length ({hparams.n_ctx})"
         )
         n_tokens_to_generate = hparams.n_ctx - len(input_ids) - 1
-        logger.warning(f"Reducing tokens to generate to {n_tokens_to_generate}")
+        print(f"Reducing tokens to generate to {n_tokens_to_generate}")
 
     # Print the initial prompt
     print(prompt, end="", flush=True)
 
     # Generate tokens with streaming
-    output_ids = generate(
+    output_ids = generate_tokens(
         input_ids, params, hparams.n_head, n_tokens_to_generate, encoder=encoder
     )
     print()  # Add newline after generation
@@ -210,7 +206,7 @@ def main():
         try:
             # Get user input with readline support
             prompt = input("Enter a prompt: ")
-            run(params, hparams, prompt.strip())
+            generate(params, hparams, prompt.strip())
         except KeyboardInterrupt:
             print("\nInterrupted by user")
             continue
@@ -220,7 +216,6 @@ def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING)
     main()
     # print(main("The rain in Spain falls mainly in the", 40))
     # print(main("You're a wizard,", 40))

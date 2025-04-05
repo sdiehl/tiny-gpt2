@@ -25,7 +25,6 @@ poetry run python gpt2_run.py
 
 The core logic is split into several files:
 
-* `gpt2_loader.py` - Downloads the weights and saves them to `model.safetensors`
 * `gpt2_tensors.py` - Loads the tensors into layer forms that can be used for inference
 * `gpt2_ops.py` - Implements the GPT-2 primitives (gelu, layernorm, softmax, etc.)
 * `gpt2_run.py` - Loads the weights and runs inference
