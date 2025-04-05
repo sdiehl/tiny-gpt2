@@ -1,5 +1,4 @@
-from tinygpt2.gpt2_tensors import load_gpt2_weights
-from tinygpt2.gpt2_run import generate
+from tinygpt2 import load_gpt2_weights, generate
 
 # Load model parameters once
 print("Loading model parameters...")

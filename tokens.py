@@ -2,7 +2,7 @@
 Example usage of the tokenizer.
 """
 
-from tinygpt2.encoder import get_encoder
+from tinygpt2 import get_encoder
 
 
 def main():
