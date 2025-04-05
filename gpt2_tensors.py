@@ -22,6 +22,7 @@ Safetensors is a fast and safe format for storing tensors. The format uses a sim
 - Keys are UTF-8 encoded strings representing tensor names (e.g. 'model.layers.0.attention.weight')
 - Values are binary tensor data with a fixed header containing shape and dtype information
 - A metadata section at the start of the file contains an index of all tensors and their offsets
+
 This structure allows for direct memory mapping and random access to individual tensors
 without loading the entire file into memory.
 

@@ -137,27 +137,33 @@ def gpt2(inputs: list[int], params: ModelParams, n_head: int) -> np.ndarray:
 
 
 def generate(
-    inputs: list[int], params: ModelParams, n_head: int, n_tokens_to_generate: int
+    inputs: list[int],
+    params: ModelParams,
+    n_head: int,
+    n_tokens_to_generate: int,
+    encoder=None,
 ) -> list[int]:
     inputs = list(inputs)  # Make a copy to avoid modifying the original
+    generated_tokens = []
 
     for i in range(n_tokens_to_generate):
-        # Print progress
-        print(f"Generating token {i+1}/{n_tokens_to_generate}", end="\r")
-
         # Get logits for the entire sequence
         logits = gpt2(inputs, params, n_head=n_head)
 
         # Get the next token ID from the last position
         next_id = np.argmax(logits[-1])
+        next_id_int = int(next_id)
 
         # Add the predicted token to the sequence
-        inputs.append(int(next_id))
+        inputs.append(next_id_int)
+        generated_tokens.append(next_id_int)
 
-    print()  # Newline after progress
+        # Stream the token if encoder is provided
+        if encoder:
+            token_text = encoder.decode([next_id_int])
+            print(token_text, end="", flush=True)
 
-    # Return only the newly generated tokens
-    return inputs[len(inputs) - n_tokens_to_generate :]
+    return generated_tokens
 
 
 def run(
@@ -177,14 +183,17 @@ def run(
         n_tokens_to_generate = hparams.n_ctx - len(input_ids) - 1
         logger.warning(f"Reducing tokens to generate to {n_tokens_to_generate}")
 
-    # Generate tokens
-    # print(f"Generating {n_tokens_to_generate} tokens for prompt:\n {prompt}")
-    print(prompt)
-    output_ids = generate(input_ids, params, hparams.n_head, n_tokens_to_generate)
+    # Print the initial prompt
+    print(prompt, end="", flush=True)
 
-    # Decode the output
-    output_text = encoder.decode(output_ids)
-    return output_text
+    # Generate tokens with streaming
+    output_ids = generate(
+        input_ids, params, hparams.n_head, n_tokens_to_generate, encoder=encoder
+    )
+    print()  # Add newline after generation
+
+    # Return the generated text (though it's already been printed)
+    return encoder.decode(output_ids)
 
 
 def main():
@@ -201,8 +210,7 @@ def main():
         try:
             # Get user input with readline support
             prompt = input("Enter a prompt: ")
-            output = run(params, hparams, prompt.strip())
-            print(output)
+            run(params, hparams, prompt.strip())
         except KeyboardInterrupt:
             print("\nInterrupted by user")
             continue
