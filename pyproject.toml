@@ -5,7 +5,9 @@ description = ""
 authors = ["sdiehl <stephen.m.diehl@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-package-mode = false
+packages = [
+    { include = "tinygpt2" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -30,7 +32,7 @@ build-backend = "poetry.core.masonry.api"
 
 # Disable mypy on the file encoder.py
 [tool.mypy]
-exclude = ["encoder.py"]
+exclude = ["tinygpt2/encoder.py"]
 
 [tool.ruff]
 exclude = ["encoder.py"]

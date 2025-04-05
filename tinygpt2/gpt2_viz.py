@@ -6,9 +6,11 @@ during model inference.
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Optional
-from encoder import get_encoder
-from gpt2_tensors import ModelParams, HParams
-import gpt2_ops as ops
+
+from tinygpt2.encoder import get_encoder
+from tinygpt2.gpt2_tensors import ModelParams, HParams
+from tinygpt2.gpt2_tensors import load_gpt2_weights
+import tinygpt2.gpt2_ops as ops
 
 
 def compute_attention_scores(
@@ -176,7 +178,6 @@ def visualize_attention(
 
 
 if __name__ == "__main__":
-    from gpt2_tensors import load_gpt2_weights
 
     # Load model weights and configuration
     print("Loading model weights...")
@@ -187,4 +188,6 @@ if __name__ == "__main__":
     prompt = "The quick brown fox jumps over the lazy dog"
 
     # Visualize attention for the first three transformer blocks
-    visualize_attention(prompt, params, hparams, num_blocks=1, save_path="attention.png")
+    visualize_attention(
+        prompt, params, hparams, num_blocks=1, save_path="attention.png"
+    )

@@ -1,5 +1,10 @@
 import numpy as np
-from gpt2_tensors import LayerNormParams, LinearParams, MLPParams, AttentionParams
+from tinygpt2.gpt2_tensors import (
+    LayerNormParams,
+    LinearParams,
+    MLPParams,
+    AttentionParams,
+)
 
 # N - sequence length
 # 768 - embedding size

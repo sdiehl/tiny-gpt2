@@ -2,16 +2,20 @@
 Example usage of the tokenizer.
 """
 
-from encoder import get_encoder
+from tinygpt2.encoder import get_encoder
 
 
 def main():
     encoder = get_encoder("", "model")
 
     while True:
-        text = input("Enter text to encode: ")
-        encoded = encoder.encode(text)
-        print(f"Tokens: {encoded}")
+        try:
+            text = input("Enter text to encode: ")
+            encoded = encoder.encode(text)
+            print(f"Tokens: {encoded}")
+        except EOFError:
+            print("\nDone.")
+            break
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
-# gpt2-weights
+# tinygpt2
 
 A reference implementation of GPT-2 in pure Python. Download the weights from
-HuggingFace and performs inference just using NumPy.
+HuggingFace and performs inference just using NumPy. Really only useful for as
+a teaching tool, don't actually use this for anything.
 
 * [GPT2 Safetensors](https://huggingface.co/openai-community/gpt2/blob/main/model.safetensors)
 * [Download Link](https://huggingface.co/openai-community/gpt2/resolve/main/model.safetensors) ( 548 MB )

@@ -6,10 +6,11 @@ functionality using the tensor operations and weight loading utilities.
 """
 
 import numpy as np
-from encoder import get_encoder
-from gpt2_tensors import load_gpt2_weights, ModelParams, HParams
-import gpt2_ops as ops
 import readline
+
+from tinygpt2.encoder import get_encoder
+from tinygpt2.gpt2_tensors import load_gpt2_weights, ModelParams, HParams
+import tinygpt2.gpt2_ops as ops
 
 
 def gpt2(inputs: list[int], params: ModelParams, n_head: int) -> np.ndarray:

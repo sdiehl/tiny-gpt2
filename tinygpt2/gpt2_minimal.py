@@ -1,5 +1,5 @@
 import numpy as np
-from gpt2_tensors import ModelParams
+from tinygpt2.gpt2_tensors import ModelParams
 
 
 def gpt2(inputs: list[int], params: ModelParams, n_head: int) -> np.ndarray:
