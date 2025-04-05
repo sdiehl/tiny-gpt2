@@ -16,15 +16,51 @@ Abbreviation Dictionary:
     qkv  - Query, Key, Value (attention components)
     attn - Attention
     proj - Projection (linear transformation)
+
+Safetensors is a fast and safe format for storing tensors. The format uses a simple key/value structure where:
+
+- Keys are UTF-8 encoded strings representing tensor names (e.g. 'model.layers.0.attention.weight')
+- Values are binary tensor data with a fixed header containing shape and dtype information
+- A metadata section at the start of the file contains an index of all tensors and their offsets
+This structure allows for direct memory mapping and random access to individual tensors
+without loading the entire file into memory.
+
+{
+    "wpe.weight": np.array([1024, 768]),
+    "wte.weight": np.array([50257, 768]),
+    ...
+    "h.0.attn.bias": np.array([1, 1, 1024, 1024]),
+    "h.0.attn.c_attn.bias": np.array([2304]),
+    "h.0.attn.c_attn.weight": np.array([768, 2304]),
+    "h.0.attn.c_proj.bias": np.array([768]),
+    "h.0.attn.c_proj.weight": np.array([768, 768]),
+    "h.0.ln_1.bias": np.array([768]),
+    "h.0.ln_1.weight": np.array([768]),
+    "h.0.ln_2.bias": np.array([768]),
+    "h.0.ln_2.weight": np.array([768]),
+    "h.0.mlp.c_fc.bias": np.array([3072]),
+    "h.0.mlp.c_fc.weight": np.array([768, 3072]),
+    "h.0.mlp.c_proj.bias": np.array([768]),
+    "h.0.mlp.c_proj.weight": np.array([3072, 768]),
+    ...
+    "ln_f.bias": np.array([768]),
+    "ln_f.weight": np.array([768])
+}
 """
 
 import numpy as np
-import logging
-from typing import Dict, Any, Tuple, Optional, List
-from gpt2_loader import GPT2WeightLoader, download_vocab_encoder
+from pathlib import Path
+import requests
+from safetensors import safe_open
 from dataclasses import dataclass
+from typing import List, Tuple
+import json
 
-logger = logging.getLogger(__name__)
+# URLs for vocabulary and encoder files
+VOCAB_URL = "https://openaipublic.blob.core.windows.net/gpt-2/models/124M/vocab.bpe"
+ENCODE_URL = "https://openaipublic.blob.core.windows.net/gpt-2/models/124M/encoder.json"
+HF_API_URL = "https://huggingface.co/api/models/"
+HF_REPO_URL = "https://huggingface.co/"
 
 
 @dataclass
@@ -83,117 +119,93 @@ class ModelParams:
 class HParams:
     """Hyperparameters for the GPT-2 model."""
 
-    n_layer: int  # Number of transformer blocks
+    n_layer: int  # Number of transformer layers
     n_head: int  # Number of attention heads
     n_ctx: int  # Context length
 
 
-class GPT2TensorManager:
-    """Manages loading and organizing GPT-2 model weights and parameters."""
+def load_gpt2_weights(
+    model_name: str = "openai-community/gpt2", cache_dir: str = "model"
+) -> Tuple[ModelParams, HParams]:
+    """Load GPT-2 weights from HuggingFace into structured dataclasses."""
+    cache_path = Path(cache_dir)
+    cache_path.mkdir(parents=True, exist_ok=True)
 
-    def __init__(self, model_name: str = "openai-community/gpt2"):
-        """
-        Initialize the tensor manager.
+    # Download model info and config
+    response = requests.get(f"{HF_API_URL}{model_name}")
+    response.raise_for_status()
 
-        Args:
-            model_name: Name of the model to load weights from
-        """
-        self.model_name = model_name
-        self.loader: Optional[GPT2WeightLoader] = None
-        self.hparams: Optional[Dict[str, Any]] = None
+    # Get config
+    config_path = cache_path / "config.json"
+    if not config_path.exists():
+        config_url = f"{HF_REPO_URL}{model_name}/resolve/main/config.json"
+        response = requests.get(config_url)
+        response.raise_for_status()
+        config_path.write_text(response.text)
 
-    def initialize(self) -> None:
-        """Download necessary files and initialize the weight loader."""
-        # Download vocabulary and encoder files
-        download_vocab_encoder("model")
+    # Load config
+    with open(config_path) as f:
+        config = json.load(f)
 
-        # Initialize and download weights
-        self.loader = GPT2WeightLoader(self.model_name)
-        self.loader.download_weights()
+    # Download safetensors file - simplified since we know there's only one
+    weights_path = cache_path / "model.safetensors"
+    if not weights_path.exists():
+        weights_url = f"{HF_REPO_URL}{model_name}/resolve/main/model.safetensors"
+        response = requests.get(weights_url)
+        response.raise_for_status()
+        weights_path.write_bytes(response.content)
 
-        # Load configuration
-        self.hparams = self.loader.config
-        logger.info(f"Model configuration loaded: {self.hparams}")
+    # Load tensors
+    tensors = {}
+    with safe_open(weights_path, framework="numpy") as f:
+        for key in f.keys():
+            tensors[key] = f.get_tensor(key)
 
-    def get_tensor(self, name: str) -> np.ndarray:
-        if self.loader is None:
-            raise RuntimeError(
-                "TensorManager not initialized. Call initialize() first."
-            )
-
-        tensor = self.loader.get_tensor(name)
-        logger.debug(f"Loaded tensor {name} with shape {tensor.shape}")
-        return tensor
-
-    def load_transformer_block(self, block_idx: int) -> TransformerBlockParams:
-        prefix = f"h.{block_idx}"
-        logger.debug(f"\nLoading transformer block {block_idx}")
-
-        # Load attention weights
-        c_attn_w = self.get_tensor(f"{prefix}.attn.c_attn.weight")
-        c_attn_b = self.get_tensor(f"{prefix}.attn.c_attn.bias")
-        c_proj_w = self.get_tensor(f"{prefix}.attn.c_proj.weight")
-        c_proj_b = self.get_tensor(f"{prefix}.attn.c_proj.bias")
-
-        # Load MLP weights
-        c_fc_w = self.get_tensor(f"{prefix}.mlp.c_fc.weight")
-        c_fc_b = self.get_tensor(f"{prefix}.mlp.c_fc.bias")
-        c_proj2_w = self.get_tensor(f"{prefix}.mlp.c_proj.weight")
-        c_proj2_b = self.get_tensor(f"{prefix}.mlp.c_proj.bias")
-
-        return TransformerBlockParams(
+    # Build transformer blocks
+    blocks = []
+    for i in range(config["n_layer"]):
+        prefix = f"h.{i}"
+        block = TransformerBlockParams(
             ln_1=LayerNormParams(
-                g=self.get_tensor(f"{prefix}.ln_1.weight"),
-                b=self.get_tensor(f"{prefix}.ln_1.bias"),
+                g=tensors[f"{prefix}.ln_1.weight"], b=tensors[f"{prefix}.ln_1.bias"]
             ),
             ln_2=LayerNormParams(
-                g=self.get_tensor(f"{prefix}.ln_2.weight"),
-                b=self.get_tensor(f"{prefix}.ln_2.bias"),
+                g=tensors[f"{prefix}.ln_2.weight"], b=tensors[f"{prefix}.ln_2.bias"]
             ),
             mlp=MLPParams(
-                c_fc=LinearParams(w=c_fc_w, b=c_fc_b),
-                c_proj=LinearParams(w=c_proj2_w, b=c_proj2_b),
+                c_fc=LinearParams(
+                    w=tensors[f"{prefix}.mlp.c_fc.weight"],
+                    b=tensors[f"{prefix}.mlp.c_fc.bias"],
+                ),
+                c_proj=LinearParams(
+                    w=tensors[f"{prefix}.mlp.c_proj.weight"],
+                    b=tensors[f"{prefix}.mlp.c_proj.bias"],
+                ),
             ),
             attn=AttentionParams(
-                c_attn=LinearParams(w=c_attn_w, b=c_attn_b),
-                c_proj=LinearParams(w=c_proj_w, b=c_proj_b),
+                c_attn=LinearParams(
+                    w=tensors[f"{prefix}.attn.c_attn.weight"],
+                    b=tensors[f"{prefix}.attn.c_attn.bias"],
+                ),
+                c_proj=LinearParams(
+                    w=tensors[f"{prefix}.attn.c_proj.weight"],
+                    b=tensors[f"{prefix}.attn.c_proj.bias"],
+                ),
             ),
         )
+        blocks.append(block)
 
-    def load_model_weights(self) -> Tuple[ModelParams, HParams]:
-        """
-        Load and organize all model weights.
+    # Build final model params
+    params = ModelParams(
+        wte=tensors["wte.weight"],
+        wpe=tensors["wpe.weight"],
+        blocks=blocks,
+        ln_f=LayerNormParams(g=tensors["ln_f.weight"], b=tensors["ln_f.bias"]),
+    )
 
-        Returns:
-            Tuple of (model parameters, hyperparameters)
-        """
-        if self.loader is None:
-            self.initialize()
+    # Extract hyperparameters
+    hparams = HParams(
+        n_layer=config["n_layer"], n_head=config["n_head"], n_ctx=config["n_ctx"]
+    )
 
-        if self.hparams is None:
-            raise RuntimeError("Model hyperparameters not loaded")
-
-        # Load embeddings
-        wte = self.get_tensor("wte.weight")  # Token embeddings
-        wpe = self.get_tensor("wpe.weight")  # Position embeddings
-
-        # Load final layer norm
-        ln_f = LayerNormParams(
-            g=self.get_tensor("ln_f.weight"),
-            b=self.get_tensor("ln_f.bias"),
-        )
-
-        # Load all transformer blocks
-        blocks = []
-        for i in range(self.hparams["n_layer"]):
-            blocks.append(self.load_transformer_block(i))
-
-        params = ModelParams(wte=wte, wpe=wpe, blocks=blocks, ln_f=ln_f)
-
-        hparams = HParams(
-            n_layer=self.hparams["n_layer"],
-            n_head=self.hparams["n_head"],
-            n_ctx=self.hparams["n_ctx"],
-        )
-
-        return params, hparams
+    return params, hparams

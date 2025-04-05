@@ -7,7 +7,7 @@ functionality using the tensor operations and weight loading utilities.
 
 import numpy as np
 from encoder import get_encoder
-from gpt2_tensors import GPT2TensorManager, ModelParams, HParams
+from gpt2_tensors import load_gpt2_weights, ModelParams, HParams
 import gpt2_ops as ops
 import logging
 import readline
@@ -190,8 +190,7 @@ def run(
 def main():
     # Load model weights and configuration
     print("Loading model weights...")
-    tensor_manager = GPT2TensorManager()
-    params, hparams = tensor_manager.load_model_weights()
+    params, hparams = load_gpt2_weights()
     print("Model loaded successfully")
 
     # Configure readline
@@ -215,7 +214,6 @@ def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING)
     main()
-
     # print(main("The rain in Spain falls mainly in the", 40))
     # print(main("You're a wizard,", 40))
     # print(main("What is the capital of France?", 10))
