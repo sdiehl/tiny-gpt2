@@ -187,4 +187,4 @@ if __name__ == "__main__":
     prompt = "The quick brown fox jumps over the lazy dog"
 
     # Visualize attention for the first three transformer blocks
-    visualize_attention(prompt, params, hparams, num_blocks=1)
+    visualize_attention(prompt, params, hparams, num_blocks=1, save_path="attention.png")
