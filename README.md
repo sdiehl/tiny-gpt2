@@ -43,3 +43,9 @@ In the model directory, you will find the following files:
 * `model.safetensors` - The model weights
 * `vocab.bpe` - The BPE vocab from the original GPT-2 repository
 * `encoder.json` - The encoder json from the original GPT-2 repository
+
+## Visualization
+
+The attention patterns of the model can be visualized using the `gpt2_viz.py` script. This will generate a heatmap of the attention patterns for a given input sequence.
+
+![](./attention.png)
