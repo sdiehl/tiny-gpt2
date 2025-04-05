@@ -12,6 +12,8 @@ requests = "^2.32.3"
 numpy = "^2.2.4"
 regex = "^2024.11.6"
 
+[tool.poetry.group.vis.dependencies]
+matplotlib = "^3.10.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"

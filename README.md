@@ -35,6 +35,7 @@ In addition, the following files are included:
 * [`encoder.py`](encoder.py) - The BPE encoder from the original GPT-2 repository
 * [`tokenize.py`](tokenize.py) - Example of how to use the encoder
 * [`gpt2_minimal.py`](gpt2_minimal.py) - The GPT-2 model in a single function
+* [`gpt2_viz.py`](gpt2_viz.py) - Visualize the attention patterns of the model
 
 In the model directory, you will find the following files:
 

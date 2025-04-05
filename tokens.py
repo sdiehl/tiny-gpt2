@@ -6,7 +6,7 @@ from encoder import get_encoder
 
 
 def main():
-    encoder = get_encoder("", ".")
+    encoder = get_encoder("", "model")
 
     while True:
         text = input("Enter text to encode: ")
