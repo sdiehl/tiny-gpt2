@@ -16,7 +16,7 @@ Also need to download the encoder and vocab files `vocab.bpe` and `encoder.json`
 # Install dependencies
 poetry install
 
-# Run inference
+# Run inference examples
 poetry run python example.py
 ```
 
