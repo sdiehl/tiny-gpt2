@@ -11,8 +11,15 @@ def main():
     while True:
         try:
             text = input("Enter text to encode: ")
-            encoded = encoder.encode(text)
-            print(f"Tokens: {encoded}")
+            encoded_ids = encoder.encode(text)
+
+            # Decode each token ID back to its string representation
+            decoded_tokens = [encoder.decode([token_id]) for token_id in encoded_ids]
+
+            print("Token Mapping:")
+            for token, token_id in zip(decoded_tokens, encoded_ids):
+                print(f"  '{token}': {token_id}")
+
         except EOFError:
             print("\nDone.")
             break
