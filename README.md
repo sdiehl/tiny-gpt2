@@ -31,7 +31,7 @@ The core logic is split into several files:
 In addition, the following files are included:
 
 * [`encoder.py`](tinygpt2/encoder.py) - The BPE encoder from the original GPT-2 repository
-* [`tokenize.py`](tokenize.py) - Example of how to use the encoder
+* [`tokens.py`](tokens.py) - Example of how to use the encoder
 * [`gpt2_minimal.py`](tinygpt2/gpt2_minimal.py) - The GPT-2 model in a single function
 * [`gpt2_viz.py`](tinygpt2/gpt2_viz.py) - Visualize the attention patterns of the model
 
