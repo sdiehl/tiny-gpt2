@@ -22,7 +22,7 @@ matplotlib = "^3.10.3"
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 ruff = "^0.11.12"
-mypy = "^1.15.0"
+mypy = "^1.16.0"
 types-requests = "^2.32.0.20250515"
 types-regex = "^2024.11.6.20250403"
 
