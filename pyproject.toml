@@ -14,7 +14,7 @@ python = "^3.12"
 safetensors = "^0.5.3"
 requests = "^2.32.4"
 numpy = "^2.3.1"
-regex = "^2024.11.6"
+regex = "^2025.7.34"
 
 [tool.poetry.group.vis.dependencies]
 matplotlib = "^3.10.3"
