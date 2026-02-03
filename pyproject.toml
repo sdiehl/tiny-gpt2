@@ -24,7 +24,7 @@ black = "^26.1.0"
 ruff = "^0.14.14"
 mypy = "^1.19.1"
 types-requests = "^2.32.4.20260107"
-types-regex = "^2024.11.6.20250403"
+types-regex = "^2026.1.15.20260116"
 
 [build-system]
 requires = ["poetry-core"]
