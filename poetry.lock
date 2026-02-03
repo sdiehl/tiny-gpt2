@@ -1257,14 +1257,14 @@ files = [
 
 [[package]]
 name = "types-regex"
-version = "2024.11.6.20250403"
+version = "2026.1.15.20260116"
 description = "Typing stubs for regex"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_regex-2024.11.6.20250403-py3-none-any.whl", hash = "sha256:e22c0f67d73f4b4af6086a340f387b6f7d03bed8a0bb306224b75c51a29b0001"},
-    {file = "types_regex-2024.11.6.20250403.tar.gz", hash = "sha256:3fdf2a70bbf830de4b3a28e9649a52d43dabb57cdb18fbfe2252eefb53666665"},
+    {file = "types_regex-2026.1.15.20260116-py3-none-any.whl", hash = "sha256:b20786eacbde2f2a261cbe7f5096f483da995488d196f81e585ffd2dffc555e0"},
+    {file = "types_regex-2026.1.15.20260116.tar.gz", hash = "sha256:7151a9bcc5bbf9ecfccf8335c451aca8204f5a0992e0622aafaf482876cee4f7"},
 ]
 
 [[package]]
@@ -1315,4 +1315,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "ebe6131fb1414b098d5686bd4fc06c012413d6bdef57d973693f19c57873a48b"
+content-hash = "9230545f3d78792a427d0a4d2fc2ed08883574d74d89ff20bf9438980380a007"
