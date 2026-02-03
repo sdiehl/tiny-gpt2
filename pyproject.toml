@@ -17,7 +17,7 @@ numpy = "^2.4.2"
 regex = "^2026.1.15"
 
 [tool.poetry.group.vis.dependencies]
-matplotlib = "^3.10.7"
+matplotlib = "^3.10.8"
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.1.0"
