@@ -21,7 +21,7 @@ matplotlib = "^3.10.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.1.0"
-ruff = "^0.14.14"
+ruff = "^0.15.0"
 mypy = "^1.19.1"
 types-requests = "^2.32.4.20260107"
 types-regex = "^2026.1.15.20260116"
