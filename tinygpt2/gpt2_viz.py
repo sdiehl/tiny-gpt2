@@ -178,7 +178,6 @@ def visualize_attention(
 
 
 if __name__ == "__main__":
-
     # Load model weights and configuration
     print("Loading model weights...")
     params, hparams = load_gpt2_weights()

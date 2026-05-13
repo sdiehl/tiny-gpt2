@@ -1,34 +1,36 @@
-[tool.poetry]
+[project]
 name = "gpt2-weights"
 version = "0.1.0"
 description = ""
-authors = ["sdiehl <stephen.m.diehl@gmail.com>"]
+authors = [{ name = "sdiehl", email = "stephen.m.diehl@gmail.com" }]
 readme = "README.md"
 license = "MIT"
-packages = [
-    { include = "tinygpt2" },
+requires-python = ">=3.12"
+dependencies = [
+  "safetensors>=0.7.0,<0.8.0",
+  "requests>=2.33.1,<3.0.0",
+  "numpy>=2.4.4,<3.0.0",
+  "regex>=2026.4.4",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-safetensors = "^0.7.0"
-requests = "^2.32.5"
-numpy = "^2.4.4"
-regex = "^2026.4.4"
+[project.optional-dependencies]
+vis = ["matplotlib>=3.10.9,<4.0.0"]
 
-[tool.poetry.group.vis.dependencies]
-matplotlib = "^3.10.9"
-
-[tool.poetry.group.dev.dependencies]
-black = "^26.3.1"
-ruff = "^0.15.5"
-mypy = "^1.19.1"
-types-requests = "^2.32.4.20260107"
-types-regex = "^2026.4.4.20260408"
+[dependency-groups]
+dev = [
+  "black>=26.3.1,<27.0.0",
+  "ruff>=0.15.12,<0.16.0",
+  "mypy>=2.0.0,<3.0.0",
+  "types-requests>=2.33.0.20260508",
+  "types-regex>=2026.4.4.20260408",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tinygpt2"]
 
 # Disable mypy on the file encoder.py
 [tool.mypy]
