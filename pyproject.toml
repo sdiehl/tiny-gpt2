@@ -7,7 +7,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
-  "safetensors>=0.7.0,<0.8.0",
+  "safetensors>=0.7.0,<0.9.0",
   "requests>=2.33.1,<3.0.0",
   "numpy>=2.4.4,<3.0.0",
   "regex>=2026.4.4",
